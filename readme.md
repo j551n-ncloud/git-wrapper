@@ -47,7 +47,7 @@ gw config    # Open configuration menu
 
 ```bash
 # Download the script
-curl -O https://raw.githubusercontent.com/yourusername/git-wrapper/main/gw.py
+curl -O https://raw.githubusercontent.com/j551n-ncloud/git-wrapper/main/gw.py
 
 # Make it executable
 chmod +x gw.py
@@ -63,7 +63,7 @@ gw --help
 
 ```powershell
 # Download the script
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/yourusername/git-wrapper/main/gw.py" -OutFile "gw.py"
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/j551n-ncloud/git-wrapper/main/gw.py" -OutFile "gw.py"
 
 # Create a batch file wrapper
 @echo off
@@ -93,7 +93,7 @@ python "%~dp0gw.py" %*
    mkdir -p ~/.local/bin
    
    # Download the script
-   curl -o ~/.local/bin/gw.py https://raw.githubusercontent.com/yourusername/git-wrapper/main/gw.py
+   curl -o ~/.local/bin/gw.py https://raw.githubusercontent.com/j551n-ncloud/git-wrapper/main/gw.py
    
    # Make it executable
    chmod +x ~/.local/bin/gw.py
@@ -122,7 +122,7 @@ python "%~dp0gw.py" %*
    mkdir -p ~/.local/bin
    
    # Download the script
-   curl -o ~/.local/bin/gw.py https://raw.githubusercontent.com/yourusername/git-wrapper/main/gw.py
+   curl -o ~/.local/bin/gw.py https://raw.githubusercontent.com/j551n-ncloud/git-wrapper/main/gw.py
    
    # Make it executable
    chmod +x ~/.local/bin/gw.py
@@ -163,7 +163,7 @@ python "%~dp0gw.py" %*
    New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\bin"
    
    # Download the script
-   Invoke-WebRequest -Uri "https://raw.githubusercontent.com/yourusername/git-wrapper/main/gw.py" -OutFile "$env:USERPROFILE\bin\gw.py"
+   Invoke-WebRequest -Uri "https://raw.githubusercontent.com/j551n-ncloud/git-wrapper/main/gw.py" -OutFile "$env:USERPROFILE\bin\gw.py"
    
    # Create a batch file wrapper
    @"
@@ -193,7 +193,7 @@ If you want to contribute or modify the script:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/git-wrapper.git
+git clone https://github.com/j551n-ncloud/git-wrapper.git
 cd git-wrapper
 
 # Make it executable
