@@ -658,6 +658,8 @@ class InteractiveGitWrapper:
 • Use Ctrl+C to exit at any time
 • Default values are shown in [brackets]
 • All operations ask for confirmation when destructive
+• Created by Johannes Nguyen
+• https://j551n.com
         """)
         input("\nPress Enter to continue...")
     
