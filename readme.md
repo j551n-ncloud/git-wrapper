@@ -5,314 +5,343 @@
 ![Git Version](https://img.shields.io/badge/git-2.0%2B-red)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey)
 ![Status](https://img.shields.io/badge/status-stable-brightgreen)
-![Version](https://img.shields.io/badge/version-1.0.0-orange)
 
-🚀 A user-friendly, interactive command-line interface for Git operations that simplifies version control with intuitive menus and smart defaults.
+🚀 **A powerful, user-friendly interactive command-line interface for Git operations** that transforms complex Git workflows into intuitive menu-driven experiences. Perfect for developers who want to streamline their version control workflow without memorizing complex Git commands.
 
 **Created by:** [Johannes Nguyen](https://j551n.com)
 
-## Features
+---
 
-- **Interactive Menu System**: Navigate Git operations through numbered menus
-- **Smart Repository Detection**: Automatically detects Git repositories and adapts interface
-- **Visual Feedback**: Emoji indicators and colored output for better user experience
-- **Configuration Management**: Save and manage user preferences
-- **Quick Commands**: Direct command execution for common operations
-- **Cross-Platform**: Works on Windows, macOS, and Linux
-- **Beginner Friendly**: Clear prompts and confirmations for destructive operations
+## ✨ Key Features
 
-## Quick Start
+### 🎯 **Multi-Remote Management**
+- Push to single, multiple, or all remotes with one command
+- Set default remotes for streamlined operations
+- Visual feedback for multi-remote operations
+- Intelligent remote detection and configuration
 
+### 🌿 **Advanced Branch Operations**
+- Interactive branch creation and switching
+- Safe branch deletion with confirmations
+- Branch listing with current branch highlighting
+- Seamless branch management workflow
+
+### 📊 **Smart Repository Insights**
+- Real-time repository status display
+- Uncommitted changes detection
+- Current branch information
+- Clean working directory indicators
+
+### ⚙️ **Intelligent Configuration**
+- Persistent user preferences
+- Auto-push capabilities
+- Customizable emoji display
+- Default branch and remote settings
+
+### 🔄 **Streamlined Workflows**
+- One-command sync (pull + push)
+- Quick commit with interactive prompts
+- Bulk operations across multiple remotes
+- Repository initialization and cloning
+
+---
+
+## 🚀 Quick Start
+
+### Interactive Mode
 ```bash
-# Interactive mode
 gw
-
-# Direct commands
-gw status    # Show repository status
-gw commit    # Quick commit workflow
-gw sync      # Pull and push changes
-gw config    # Open configuration menu
 ```
 
-## Installation
+### Direct Commands
+```bash
+gw status    # Show comprehensive repository status
+gw commit    # Interactive commit workflow with smart prompts
+gw sync      # Pull latest changes and push commits
+gw config    # Open configuration management
+gw push      # Advanced push operations menu
+```
+
+---
+
+## 📦 Installation
 
 ### Prerequisites
+- **Git 2.0+**: Must be installed and accessible in PATH
+- **Python 3.6+**: Required runtime environment
 
-- **Git**: Must be installed and available in your system PATH
-- **Python 3.6+**: Required to run the script
+### Quick Install (Recommended)
 
-### Option 1: Quick Install (Recommended)
-
-#### macOS and Linux
-
+#### macOS & Linux
 ```bash
-# Download the script
-curl -O https://raw.githubusercontent.com/j551n-ncloud/git-wrapper/main/gw.py
+# Download and install in one command
+curl -o /usr/local/bin/gw https://raw.githubusercontent.com/j551n-ncloud/git-wrapper/main/git_wrapper.py && chmod +x /usr/local/bin/gw
 
-# Make it executable
-chmod +x gw.py
-
-# Move to a directory in your PATH
-sudo mv gw.py /usr/local/bin/gw
-
-# Test installation
-gw --help
+# Verify installation
+gw
 ```
 
-#### Windows (PowerShell)
-
+#### Windows (PowerShell as Administrator)
 ```powershell
-# Download the script
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/j551n-ncloud/git-wrapper/main/gw.py" -OutFile "gw.py"
+# Create installation directory
+$installDir = "$env:USERPROFILE\bin"
+New-Item -ItemType Directory -Force -Path $installDir
 
-# Create a batch file wrapper
+# Download script
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/j551n-ncloud/git-wrapper/main/git_wrapper.py" -OutFile "$installDir\gw.py"
+
+# Create wrapper batch file
+@'
 @echo off
 python "%~dp0gw.py" %*
-# Save this as gw.bat
+'@ | Out-File -FilePath "$installDir\gw.bat" -Encoding ascii
 
-# Move both files to a directory in your PATH (e.g., C:\Windows\System32)
-# Or add the directory containing the files to your PATH
+# Add to PATH
+$userPath = [Environment]::GetEnvironmentVariable("PATH", "User")
+if ($userPath -notlike "*$installDir*") {
+    [Environment]::SetEnvironmentVariable("PATH", "$userPath;$installDir", "User")
+}
 ```
 
-### Option 2: Manual Installation
+### Manual Installation
 
 #### macOS
-
-1. **Install Git and Python** (if not already installed):
-   ```bash
-   # Install Homebrew (if not installed)
-   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-   
-   # Install Git and Python
-   brew install git python
-   ```
-
-2. **Download and setup the script**:
-   ```bash
-   # Create a directory for local scripts
-   mkdir -p ~/.local/bin
-   
-   # Download the script
-   curl -o ~/.local/bin/gw.py https://raw.githubusercontent.com/j551n-ncloud/git-wrapper/main/gw.py
-   
-   # Make it executable
-   chmod +x ~/.local/bin/gw.py
-   
-   # Create a symlink for easier access
-   ln -s ~/.local/bin/gw.py ~/.local/bin/gw
-   
-   # Add to PATH (add this line to your ~/.zshrc or ~/.bash_profile)
-   echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
-   
-   # Reload your shell configuration
-   source ~/.zshrc
-   ```
-
-#### Linux (Ubuntu/Debian)
-
-1. **Install Git and Python**:
-   ```bash
-   sudo apt update
-   sudo apt install git python3 python3-pip curl
-   ```
-
-2. **Download and setup the script**:
-   ```bash
-   # Create a directory for local scripts
-   mkdir -p ~/.local/bin
-   
-   # Download the script
-   curl -o ~/.local/bin/gw.py https://raw.githubusercontent.com/j551n-ncloud/git-wrapper/main/gw.py
-   
-   # Make it executable
-   chmod +x ~/.local/bin/gw.py
-   
-   # Create a symlink
-   ln -s ~/.local/bin/gw.py ~/.local/bin/gw
-   
-   # Add to PATH (add this line to your ~/.bashrc or ~/.zshrc)
-   echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-   
-   # Reload your shell configuration
-   source ~/.bashrc
-   ```
-
-#### Linux (CentOS/RHEL/Fedora)
-
-1. **Install Git and Python**:
-   ```bash
-   # For CentOS/RHEL
-   sudo yum install git python3 curl
-   
-   # For Fedora
-   sudo dnf install git python3 curl
-   ```
-
-2. **Follow the same setup steps as Ubuntu/Debian above**
-
-#### Windows
-
-1. **Install Git and Python**:
-   - Download and install Git from [git-scm.com](https://git-scm.com/download/win)
-   - Download and install Python from [python.org](https://www.python.org/downloads/windows/)
-   - During Python installation, make sure to check "Add Python to PATH"
-
-2. **Download and setup the script**:
-   ```powershell
-   # Create a directory for scripts
-   New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\bin"
-   
-   # Download the script
-   Invoke-WebRequest -Uri "https://raw.githubusercontent.com/j551n-ncloud/git-wrapper/main/gw.py" -OutFile "$env:USERPROFILE\bin\gw.py"
-   
-   # Create a batch file wrapper
-   @"
-   @echo off
-   python "$env:USERPROFILE\bin\gw.py" %*
-   "@ | Out-File -FilePath "$env:USERPROFILE\bin\gw.bat" -Encoding ascii
-   
-   # Add to PATH (run this in an Administrator PowerShell)
-   $currentPath = [Environment]::GetEnvironmentVariable("PATH", "User")
-   [Environment]::SetEnvironmentVariable("PATH", "$currentPath;$env:USERPROFILE\bin", "User")
-   ```
-
-3. **Alternative Windows Installation using Chocolatey**:
-   ```powershell
-   # Install Chocolatey (if not installed)
-   Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-   
-   # Install Git and Python
-   choco install git python
-   
-   # Then follow the manual setup steps above
-   ```
-
-### Option 3: Development Installation
-
-If you want to contribute or modify the script:
-
 ```bash
-# Clone the repository
-git clone https://github.com/j551n-ncloud/git-wrapper.git
-cd git-wrapper
+# Install dependencies via Homebrew
+brew install git python
 
-# Make it executable
-chmod +x gw.py
+# Create local bin directory
+mkdir -p ~/.local/bin
 
-# Create a symlink to your local bin
-ln -s $(pwd)/gw.py ~/.local/bin/gw
+# Download and setup
+curl -o ~/.local/bin/gw https://raw.githubusercontent.com/j551n-ncloud/git-wrapper/main/git_wrapper.py
+chmod +x ~/.local/bin/gw
 
-# Or add the project directory to your PATH
-echo 'export PATH="$(pwd):$PATH"' >> ~/.bashrc
+# Add to PATH
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+#### Ubuntu/Debian
+```bash
+# Install dependencies
+sudo apt update && sudo apt install -y git python3 curl
+
+# Setup script
+mkdir -p ~/.local/bin
+curl -o ~/.local/bin/gw https://raw.githubusercontent.com/j551n-ncloud/git-wrapper/main/git_wrapper.py
+chmod +x ~/.local/bin/gw
+
+# Add to PATH
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
-## Verification
-
-Test your installation:
-
+#### CentOS/RHEL/Fedora
 ```bash
-# Check if gw is accessible
+# Install dependencies
+# For CentOS/RHEL: sudo yum install -y git python3 curl
+# For Fedora: sudo dnf install -y git python3 curl
+
+# Follow same setup as Ubuntu
+mkdir -p ~/.local/bin
+curl -o ~/.local/bin/gw https://raw.githubusercontent.com/j551n-ncloud/git-wrapper/main/git_wrapper.py
+chmod +x ~/.local/bin/gw
+
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+---
+
+## 🎮 Usage Guide
+
+### Interactive Menu System
+
+Launch the interactive interface:
+```bash
 gw
-
-# Verify Git is available
-git --version
-
-# Check Python version
-python --version  # or python3 --version on some systems
 ```
 
-## Usage
+**Main Menu Features:**
+- 📊 **Repository Status**: Comprehensive overview of your repo state
+- 💾 **Quick Commit**: Streamlined commit process with smart prompts
+- 🔄 **Sync Operations**: One-command pull and push workflow
+- 📤 **Advanced Push**: Multi-remote push with granular control
+- 🌿 **Branch Management**: Complete branch lifecycle operations
+- 🔗 **Remote Management**: Add, remove, and configure remotes
+- ⚙️ **Configuration**: Personalize your Git workflow
 
-### Interactive Mode
+### Advanced Push Operations
 
-Simply run `gw` to enter the interactive menu system:
+The wrapper provides sophisticated push capabilities:
 
 ```bash
-gw
+gw push
 ```
 
-The interface will show:
-- Current directory and Git repository status
-- Available operations based on repository state
-- Branch information and uncommitted changes
+**Push Options:**
+- **Single Remote**: Push to one selected remote
+- **Multiple Remotes**: Choose specific remotes for push
+- **All Remotes**: Push to every configured remote
+- **Visual Feedback**: See success/failure for each remote
 
-### Direct Commands
+### Configuration Management
 
-Execute specific operations directly:
-
+Customize your workflow:
 ```bash
-gw status    # Show detailed repository status
-gw commit    # Interactive commit workflow
-gw sync      # Pull latest changes and push commits
-gw config    # Open configuration settings
+gw config
 ```
 
-### First-Time Setup
+**Configuration Options:**
+- User name and email
+- Default branch (main/master)
+- Default remote preference
+- Auto-push after commits
+- Emoji display toggle
 
-1. Run `gw config` to set up your Git configuration:
-   - Set your name and email
-   - Configure default branch (main/master)
-   - Set preferences for auto-push and emoji display
+---
 
-2. Navigate to a Git repository or initialize a new one using the interface
+## 📁 Configuration
 
-## Configuration
-
-The wrapper stores configuration in `~/.gitwrapper_config.json`:
+Settings are stored in `~/.gitwrapper_config.json`:
 
 ```json
 {
-  "name": "Your Name",
+  "name": "Johannes Nguyen",
   "email": "your.email@example.com",
   "default_branch": "main",
+  "default_remote": "origin",
   "auto_push": true,
   "show_emoji": true
 }
 ```
 
-## Troubleshooting
+---
+
+## 🔧 Troubleshooting
 
 ### Common Issues
 
-1. **"Git is not installed or not available in PATH"**
-   - Install Git or ensure it's in your system PATH
-   - Test with `git --version`
+**Command not found**
+```bash
+# Check if gw is in PATH
+which gw
 
-2. **"gw: command not found"**
-   - The script isn't in your PATH
-   - Use the full path to the script or follow installation steps again
+# If not found, add to PATH or use full path
+export PATH="$PATH:/path/to/gw"
+```
 
-3. **Permission denied**
-   - Make sure the script is executable: `chmod +x gw.py`
+**Git not available**
+```bash
+# Verify Git installation
+git --version
 
-4. **Python not found**
-   - Install Python 3.6+ or use `python3` instead of `python`
+# Install if missing (macOS)
+brew install git
 
-### Windows-Specific Issues
+# Install if missing (Ubuntu)
+sudo apt install git
+```
 
-1. **Script doesn't run**
-   - Ensure Python is in your PATH
-   - Try running: `python gw.py` instead of `gw`
+**Permission denied**
+```bash
+# Make script executable
+chmod +x /path/to/gw
+```
 
-2. **Emoji display issues**
-   - Use Windows Terminal or ConEmu for better Unicode support
-   - Disable emojis in configuration if needed
+### Platform-Specific Issues
 
-## Contributing
+**Windows Unicode Issues**
+- Use Windows Terminal for better emoji support
+- Disable emojis in config if characters don't display properly
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test on multiple platforms
-5. Submit a pull request
+**macOS PATH Issues**
+- Add to both `~/.bashrc` and `~/.zshrc` for compatibility
+- Restart terminal after PATH changes
 
-## License
+---
 
-MIT License - see LICENSE file for details.
+## 🌟 Advanced Features
 
-## Support
+### Multi-Remote Workflows
+Perfect for developers maintaining multiple remotes (origin, upstream, mirrors):
+- Push to development and production remotes simultaneously
+- Selective remote operations with visual confirmation
+- Default remote management for streamlined operations
 
-- Create an issue on GitHub for bugs or feature requests
-- Check existing issues for solutions to common problems
-- Contribute improvements and fixes via pull requests
+### Repository Initialization
+- Smart initialization with configuration inheritance
+- Remote setup during initialization
+- Branch naming consistency
+
+### Branch Management
+- Safe operations with confirmation prompts
+- Current branch awareness
+- Local and remote branch handling
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Here's how to get started:
+
+```bash
+# Fork and clone
+git clone https://github.com/j551n-ncloud/git-wrapper.git
+cd git-wrapper
+
+# Create feature branch
+git checkout -b feature/your-feature
+
+# Make changes and test
+python git_wrapper.py
+
+# Commit and push
+git add .
+git commit -m "Add your feature"
+git push origin feature/your-feature
+```
+
+**Contribution Guidelines:**
+- Test on multiple platforms
+- Follow existing code style
+- Add documentation for new features
+- Include error handling for edge cases
+
+---
+
+## 📝 License
+
+MIT License - see [LICENSE](LICENSE) file for details.
+
+---
+
+## 🔗 Links
+
+- **Homepage**: [https://j551n.com](https://j551n.com)
+- **Repository**: [https://github.com/j551n-ncloud/git-wrapper](https://github.com/j551n-ncloud/git-wrapper)
+- **Issues**: [Report bugs or request features](https://github.com/j551n-ncloud/git-wrapper/issues)
+
+---
+
+## 🎯 Why Use Git Wrapper?
+
+**For Beginners:**
+- No need to memorize complex Git commands
+- Clear prompts and confirmations prevent mistakes
+- Visual feedback makes Git operations transparent
+
+**For Professionals:**
+- Multi-remote operations save time
+- Consistent workflows across projects
+- Quick access to advanced Git features
+
+**For Teams:**
+- Standardized Git workflows
+- Reduced training time for new developers
+- Consistent branching and remote management
+
+---
+
+*Created with ❤️ by [Johannes Nguyen](https://j551n.com)*
