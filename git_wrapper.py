@@ -21,7 +21,7 @@ class InteractiveGitWrapper:
         """Load user configuration"""
         self.config = {
             'name': '', 'email': '', 'default_branch': 'main',
-            'auto_push': True, 'show_emoji': True
+            'auto_push': True, 'show_emoji': True, 'default_remote': 'origin'
         }
         
         if self.config_file.exists():
@@ -116,6 +116,31 @@ class InteractiveGitWrapper:
             except ValueError:
                 print("Please enter a valid number.")
     
+    def get_multiple_choice(self, prompt, choices):
+        """Get multiple choices from a list"""
+        print(f"\n{prompt}")
+        print("(Enter comma-separated numbers, e.g., 1,3,4)")
+        for i, choice in enumerate(choices, 1):
+            print(f"  {i}. {choice}")
+        
+        while True:
+            try:
+                choice_input = input("\nEnter choice numbers: ").strip()
+                if not choice_input:
+                    return []
+                
+                choice_nums = [int(x.strip()) for x in choice_input.split(',')]
+                selected = []
+                for num in choice_nums:
+                    if 1 <= num <= len(choices):
+                        selected.append(choices[num - 1])
+                    else:
+                        print(f"Invalid choice: {num}")
+                        return []
+                return selected
+            except ValueError:
+                print("Please enter valid numbers separated by commas.")
+    
     def confirm(self, message, default=True):
         """Ask for confirmation"""
         suffix = "[Y/n]" if default else "[y/N]"
@@ -160,8 +185,8 @@ class InteractiveGitWrapper:
             if self.is_git_repo():
                 options.extend([
                     "📊 Show Status", "💾 Quick Commit", "🔄 Sync (Pull & Push)",
-                    "🌿 Branch Operations", "📋 View Changes", "📜 View History",
-                    "🔗 Remote Management"
+                    "📤 Push Operations", "🌿 Branch Operations", "📋 View Changes", 
+                    "📜 View History", "🔗 Remote Management"
                 ])
             else:
                 options.extend(["🎯 Initialize Repository", "📥 Clone Repository"])
@@ -191,6 +216,7 @@ class InteractiveGitWrapper:
             "Show Status": self.interactive_status,
             "Quick Commit": self.interactive_commit,
             "Sync": self.interactive_sync,
+            "Push Operations": self.interactive_push_menu,
             "Branch Operations": self.interactive_branch_menu,
             "View Changes": self.interactive_diff,
             "View History": self.interactive_log,
@@ -256,8 +282,136 @@ class InteractiveGitWrapper:
         if self.run_git_command(['git', 'commit', '-m', message]):
             self.print_success("Commit successful!")
             
-            if self.config['auto_push'] and self.confirm("Push to remote?", True):
-                self.interactive_push()
+            if self.config['auto_push'] and self.confirm("Push to remote(s)?", True):
+                self.interactive_push_menu()
+        
+        input("Press Enter to continue...")
+    
+    def interactive_push_menu(self):
+        """Interactive push operations menu"""
+        self.clear_screen()
+        print("📤 Push Operations\n" + "=" * 20)
+        
+        remotes = self.get_remotes()
+        if not remotes:
+            self.print_error("No remotes configured!")
+            input("Press Enter to continue...")
+            return
+        
+        current_branch = self.run_git_command(['git', 'branch', '--show-current'], capture_output=True)
+        print(f"Current branch: {current_branch or 'unknown'}")
+        print(f"Available remotes: {', '.join(remotes)}")
+        print("-" * 30)
+        
+        options = [
+            "Push to single remote",
+            "Push to multiple remotes",
+            "Push to all remotes",
+            "Back to main menu"
+        ]
+        
+        choice = self.get_choice("Push Options:", options)
+        
+        if "single remote" in choice:
+            self.interactive_push_single()
+        elif "multiple remotes" in choice:
+            self.interactive_push_multiple()
+        elif "all remotes" in choice:
+            self.interactive_push_all()
+        elif "Back to main menu" in choice:
+            return
+    
+    def interactive_push_single(self):
+        """Push to a single selected remote"""
+        remotes = self.get_remotes()
+        if not remotes:
+            return
+        
+        current_branch = self.run_git_command(['git', 'branch', '--show-current'], capture_output=True)
+        branch = self.get_input("Branch to push", current_branch or self.config['default_branch'])
+        
+        default_remote = self.config.get('default_remote', 'origin')
+        if default_remote not in remotes:
+            default_remote = remotes[0]
+        
+        remote = self.get_choice("Select remote to push to:", remotes, default_remote)
+        
+        self.print_working(f"Pushing {branch} to {remote}...")
+        if self.run_git_command(['git', 'push', remote, branch]):
+            self.print_success(f"Successfully pushed to {remote}/{branch}!")
+        
+        input("Press Enter to continue...")
+    
+    def interactive_push_multiple(self):
+        """Push to multiple selected remotes"""
+        remotes = self.get_remotes()
+        if not remotes:
+            return
+        
+        if len(remotes) == 1:
+            self.print_info("Only one remote available. Use single remote push instead.")
+            input("Press Enter to continue...")
+            return
+        
+        current_branch = self.run_git_command(['git', 'branch', '--show-current'], capture_output=True)
+        branch = self.get_input("Branch to push", current_branch or self.config['default_branch'])
+        
+        selected_remotes = self.get_multiple_choice("Select remotes to push to:", remotes)
+        
+        if not selected_remotes:
+            self.print_info("No remotes selected.")
+            input("Press Enter to continue...")
+            return
+        
+        self.print_info(f"Pushing {branch} to: {', '.join(selected_remotes)}")
+        
+        success_count = 0
+        failed_remotes = []
+        
+        for remote in selected_remotes:
+            self.print_working(f"Pushing to {remote}...")
+            if self.run_git_command(['git', 'push', remote, branch], show_output=False):
+                self.print_success(f"✓ Pushed to {remote}")
+                success_count += 1
+            else:
+                self.print_error(f"✗ Failed to push to {remote}")
+                failed_remotes.append(remote)
+        
+        print(f"\nSummary: {success_count}/{len(selected_remotes)} remotes successful")
+        if failed_remotes:
+            print(f"Failed remotes: {', '.join(failed_remotes)}")
+        
+        input("Press Enter to continue...")
+    
+    def interactive_push_all(self):
+        """Push to all configured remotes"""
+        remotes = self.get_remotes()
+        if not remotes:
+            return
+        
+        current_branch = self.run_git_command(['git', 'branch', '--show-current'], capture_output=True)
+        branch = self.get_input("Branch to push", current_branch or self.config['default_branch'])
+        
+        if not self.confirm(f"Push {branch} to ALL {len(remotes)} remotes?", False):
+            return
+        
+        self.print_info(f"Pushing {branch} to all remotes: {', '.join(remotes)}")
+        
+        success_count = 0
+        failed_remotes = []
+        
+        for remote in remotes:
+            self.print_working(f"Pushing to {remote}...")
+            if self.run_git_command(['git', 'push', remote, branch], show_output=False):
+                self.print_success(f"✓ Pushed to {remote}")
+                success_count += 1
+            else:
+                self.print_error(f"✗ Failed to push to {remote}")
+                failed_remotes.append(remote)
+        
+        print(f"\nSummary: {success_count}/{len(remotes)} remotes successful")
+        if failed_remotes:
+            print(f"Failed remotes: {', '.join(failed_remotes)}")
         
         input("Press Enter to continue...")
     
@@ -276,7 +430,11 @@ class InteractiveGitWrapper:
             input("Press Enter to continue...")
             return
         
-        remote = remotes[0] if len(remotes) == 1 else self.get_choice("Select remote:", remotes, "origin")
+        default_remote = self.config.get('default_remote', 'origin')
+        if default_remote not in remotes:
+            default_remote = remotes[0]
+        
+        remote = self.get_choice("Select remote for sync:", remotes, default_remote)
         
         self.print_working(f"Syncing with {remote}/{branch}")
         
@@ -292,22 +450,6 @@ class InteractiveGitWrapper:
         
         input("Press Enter to continue...")
     
-    def interactive_push(self):
-        """Interactive push with remote selection"""
-        remotes = self.get_remotes()
-        if not remotes:
-            self.print_error("No remotes configured!")
-            return
-        
-        current_branch = self.run_git_command(['git', 'branch', '--show-current'], capture_output=True)
-        branch = current_branch or self.config['default_branch']
-        
-        remote = remotes[0] if len(remotes) == 1 else self.get_choice("Select remote to push to:", remotes, "origin")
-        
-        self.print_working(f"Pushing to {remote}/{branch}...")
-        if self.run_git_command(['git', 'push', remote, branch]):
-            self.print_success("Push successful!")
-    
     def interactive_remote_menu(self):
         """Interactive remote management menu"""
         while True:
@@ -319,14 +461,15 @@ class InteractiveGitWrapper:
                 print("Current remotes:")
                 for remote in remotes:
                     url = self.run_git_command(['git', 'remote', 'get-url', remote], capture_output=True)
-                    print(f"  {remote}: {url}")
+                    default_marker = f" (default)" if remote == self.config.get('default_remote') else ""
+                    print(f"  {remote}: {url}{default_marker}")
                 print()
             else:
                 print("No remotes configured\n")
             
             options = [
                 "Add remote", "Remove remote", "List remotes", 
-                "Change remote URL", "Back to main menu"
+                "Change remote URL", "Set default remote", "Back to main menu"
             ]
             
             choice = self.get_choice("Remote Operations:", options)
@@ -339,8 +482,27 @@ class InteractiveGitWrapper:
                 self.interactive_list_remotes()
             elif "Change remote URL" in choice:
                 self.interactive_change_remote_url()
+            elif "Set default remote" in choice:
+                self.interactive_set_default_remote()
             elif "Back to main menu" in choice:
                 break
+    
+    def interactive_set_default_remote(self):
+        """Set default remote for operations"""
+        remotes = self.get_remotes()
+        if not remotes:
+            self.print_info("No remotes configured")
+            input("Press Enter to continue...")
+            return
+        
+        current_default = self.config.get('default_remote', 'origin')
+        remote = self.get_choice("Select default remote:", remotes, current_default)
+        
+        self.config['default_remote'] = remote
+        self.save_config()
+        self.print_success(f"Default remote set to: {remote}")
+        
+        input("Press Enter to continue...")
     
     def interactive_add_remote(self):
         """Add a new remote"""
@@ -355,6 +517,13 @@ class InteractiveGitWrapper:
         self.print_working(f"Adding remote '{name}'...")
         if self.run_git_command(['git', 'remote', 'add', name, url]):
             self.print_success(f"Remote '{name}' added successfully!")
+            
+            # If this is the first remote, make it default
+            remotes = self.get_remotes()
+            if len(remotes) == 1:
+                self.config['default_remote'] = name
+                self.save_config()
+                self.print_info(f"Set as default remote: {name}")
         
         input("Press Enter to continue...")
     
@@ -371,6 +540,17 @@ class InteractiveGitWrapper:
         if self.confirm(f"Are you sure you want to remove remote '{remote}'?", False):
             if self.run_git_command(['git', 'remote', 'remove', remote]):
                 self.print_success(f"Remote '{remote}' removed successfully!")
+                
+                # Update default remote if removed
+                if self.config.get('default_remote') == remote:
+                    remaining_remotes = self.get_remotes()
+                    if remaining_remotes:
+                        self.config['default_remote'] = remaining_remotes[0]
+                        self.save_config()
+                        self.print_info(f"Default remote changed to: {remaining_remotes[0]}")
+                    else:
+                        self.config['default_remote'] = 'origin'
+                        self.save_config()
         
         input("Press Enter to continue...")
     
@@ -552,6 +732,8 @@ class InteractiveGitWrapper:
                 if remote_url:
                     if self.run_git_command(['git', 'remote', 'add', 'origin', remote_url]):
                         self.print_success("Remote origin added")
+                        self.config['default_remote'] = 'origin'
+                        self.save_config()
             
             self.print_success("Repository initialized successfully!")
         
@@ -593,12 +775,13 @@ class InteractiveGitWrapper:
             print(f"Name: {self.config['name'] or 'Not set'}")
             print(f"Email: {self.config['email'] or 'Not set'}")
             print(f"Default Branch: {self.config['default_branch']}")
+            print(f"Default Remote: {self.config['default_remote']}")
             print(f"Auto Push: {self.config['auto_push']}")
             print(f"Show Emoji: {self.config['show_emoji']}")
             print("-" * 30)
             
             options = [
-                "Set Name", "Set Email", "Set Default Branch",
+                "Set Name", "Set Email", "Set Default Branch", "Set Default Remote",
                 "Toggle Auto Push", "Toggle Emoji", "Back to main menu"
             ]
             
@@ -608,6 +791,7 @@ class InteractiveGitWrapper:
                 "Set Name": lambda: self.update_config('name', self.get_input("Enter your name", self.config['name'])),
                 "Set Email": lambda: self.update_config('email', self.get_input("Enter your email", self.config['email'])),
                 "Set Default Branch": lambda: self.update_config('default_branch', self.get_input("Enter default branch", self.config['default_branch'])),
+                "Set Default Remote": self.interactive_set_default_remote_config,
                 "Toggle Auto Push": lambda: self.toggle_config('auto_push'),
                 "Toggle Emoji": lambda: self.toggle_config('show_emoji'),
                 "Back to main menu": lambda: None
@@ -622,6 +806,24 @@ class InteractiveGitWrapper:
             
             if "Back to main menu" not in choice:
                 time.sleep(1)
+    
+    def interactive_set_default_remote_config(self):
+        """Set default remote from config menu"""
+        if not self.is_git_repo():
+            self.print_error("Not in a git repository")
+            return
+        
+        remotes = self.get_remotes()
+        if not remotes:
+            self.print_info("No remotes configured in current repository")
+            return
+        
+        current_default = self.config.get('default_remote', 'origin')
+        remote = self.get_choice("Select default remote:", remotes, current_default)
+        
+        self.config['default_remote'] = remote
+        self.save_config()
+        self.print_success(f"Default remote set to: {remote}")
     
     def update_config(self, key, value):
         """Update configuration value"""
@@ -644,22 +846,38 @@ class InteractiveGitWrapper:
         print("""
 🚀 Main Features:
 • Interactive menus for all operations
-• Remote management (add/remove/change URLs)
-• Multi-remote push/pull support
-• Configuration management
+• Multi-remote push support (single/multiple/all)
+• Remote management with default remote setting
+• Branch operations and configuration management
+
+📤 Push Operations:
+• Push to single remote (with remote selection)
+• Push to multiple selected remotes
+• Push to all configured remotes at once
+• Visual feedback for multi-remote operations
 
 ⚡ Quick Commands:
 • gw status    - Show repository status
 • gw commit    - Quick commit with message
 • gw sync      - Pull and push changes
 • gw config    - Open configuration menu
+• gw push      - Open push operations menu
+
+🔗 Remote Management:
+• Add/remove remotes
+• Set default remote for operations
+• Change remote URLs
+• Multi-remote push capabilities
 
 💡 Tips:
 • Use Ctrl+C to exit at any time
 • Default values are shown in [brackets]
 • All operations ask for confirmation when destructive
-• Created by Johannes Nguyen
-• https://j551n.com
+• Multi-remote operations show individual results
+• Set a default remote to speed up operations
+
+Created by Johannes Nguyen
+Enhanced with multi-remote push support
         """)
         input("\nPress Enter to continue...")
     
@@ -678,6 +896,7 @@ def main():
             'status': git.interactive_status,
             'commit': git.interactive_commit,
             'sync': git.interactive_sync,
+            'push': git.interactive_push_menu,
             'config': git.interactive_config_menu
         }
         
@@ -685,7 +904,7 @@ def main():
             handlers[command]()
         else:
             print(f"Unknown command: {command}")
-            print("Available commands: status, commit, sync, config")
+            print("Available commands: status, commit, sync, push, config")
             print("Or run 'gw' without arguments for interactive mode")
     else:
         try:
