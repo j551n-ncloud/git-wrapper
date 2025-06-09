@@ -20,18 +20,14 @@ class InteractiveGitWrapper:
     def load_config(self):
         """Load user configuration"""
         self.config = {
-            'name': '',
-            'email': '',
-            'default_branch': 'main',
-            'auto_push': True,
-            'show_emoji': True
+            'name': '', 'email': '', 'default_branch': 'main',
+            'auto_push': True, 'show_emoji': True
         }
         
         if self.config_file.exists():
             try:
                 with open(self.config_file, 'r') as f:
-                    saved_config = json.load(f)
-                    self.config.update(saved_config)
+                    self.config.update(json.load(f))
             except (json.JSONDecodeError, IOError):
                 pass
     
@@ -44,27 +40,23 @@ class InteractiveGitWrapper:
             self.print_error("Could not save configuration")
     
     def print_success(self, message):
-        """Print success message with emoji if enabled"""
         emoji = "✅ " if self.config['show_emoji'] else ""
         print(f"{emoji}{message}")
     
     def print_error(self, message):
-        """Print error message with emoji if enabled"""
         emoji = "❌ " if self.config['show_emoji'] else ""
         print(f"{emoji}{message}")
     
     def print_info(self, message):
-        """Print info message with emoji if enabled"""
         emoji = "ℹ️  " if self.config['show_emoji'] else ""
         print(f"{emoji}{message}")
     
     def print_working(self, message):
-        """Print working message with emoji if enabled"""
         emoji = "🔄 " if self.config['show_emoji'] else ""
         print(f"{emoji}{message}")
     
     def check_git_available(self):
-        """Check if git is available in the system"""
+        """Check if git is available"""
         try:
             subprocess.run(['git', '--version'], capture_output=True, check=True)
         except (subprocess.CalledProcessError, FileNotFoundError):
@@ -128,10 +120,12 @@ class InteractiveGitWrapper:
         """Ask for confirmation"""
         suffix = "[Y/n]" if default else "[y/N]"
         response = input(f"{message} {suffix}: ").strip().lower()
-        
-        if not response:
-            return default
-        return response in ['y', 'yes']
+        return response in ['y', 'yes'] if response else default
+    
+    def get_remotes(self):
+        """Get list of remote repositories"""
+        remotes_output = self.run_git_command(['git', 'remote'], capture_output=True)
+        return remotes_output.split('\n') if remotes_output else []
     
     def show_main_menu(self):
         """Display the main interactive menu"""
@@ -152,7 +146,6 @@ class InteractiveGitWrapper:
                     branch = self.run_git_command(['git', 'branch', '--show-current'], capture_output=True)
                     print(f"🌿 Current Branch: {branch}")
                     
-                    # Show quick status
                     status = self.run_git_command(['git', 'status', '--porcelain'], capture_output=True)
                     if status:
                         print(f"📝 Uncommitted Changes: {len(status.splitlines())} files")
@@ -166,24 +159,14 @@ class InteractiveGitWrapper:
             options = []
             if self.is_git_repo():
                 options.extend([
-                    "📊 Show Status",
-                    "💾 Quick Commit",
-                    "🔄 Sync (Pull & Push)",
-                    "🌿 Branch Operations",
-                    "📋 View Changes",
-                    "📜 View History"
+                    "📊 Show Status", "💾 Quick Commit", "🔄 Sync (Pull & Push)",
+                    "🌿 Branch Operations", "📋 View Changes", "📜 View History",
+                    "🔗 Remote Management"
                 ])
             else:
-                options.extend([
-                    "🎯 Initialize Repository",
-                    "📥 Clone Repository"
-                ])
+                options.extend(["🎯 Initialize Repository", "📥 Clone Repository"])
             
-            options.extend([
-                "⚙️ Configuration",
-                "❓ Help",
-                "🚪 Exit"
-            ])
+            options.extend(["⚙️ Configuration", "❓ Help", "🚪 Exit"])
             
             for i, option in enumerate(options, 1):
                 print(f"  {i}. {option}")
@@ -204,46 +187,38 @@ class InteractiveGitWrapper:
     
     def handle_menu_choice(self, choice):
         """Handle menu selection"""
-        if "Show Status" in choice:
-            self.interactive_status()
-        elif "Quick Commit" in choice:
-            self.interactive_commit()
-        elif "Sync" in choice:
-            self.interactive_sync()
-        elif "Branch Operations" in choice:
-            self.interactive_branch_menu()
-        elif "View Changes" in choice:
-            self.interactive_diff()
-        elif "View History" in choice:
-            self.interactive_log()
-        elif "Initialize Repository" in choice:
-            self.interactive_init()
-        elif "Clone Repository" in choice:
-            self.interactive_clone()
-        elif "Configuration" in choice:
-            self.interactive_config_menu()
-        elif "Help" in choice:
-            self.show_help()
-        elif "Exit" in choice:
-            print("\nGoodbye! 👋")
-            sys.exit(0)
+        handlers = {
+            "Show Status": self.interactive_status,
+            "Quick Commit": self.interactive_commit,
+            "Sync": self.interactive_sync,
+            "Branch Operations": self.interactive_branch_menu,
+            "View Changes": self.interactive_diff,
+            "View History": self.interactive_log,
+            "Remote Management": self.interactive_remote_menu,
+            "Initialize Repository": self.interactive_init,
+            "Clone Repository": self.interactive_clone,
+            "Configuration": self.interactive_config_menu,
+            "Help": self.show_help,
+            "Exit": lambda: (print("\nGoodbye! 👋"), sys.exit(0))
+        }
+        
+        for key, handler in handlers.items():
+            if key in choice:
+                handler()
+                break
     
     def interactive_status(self):
         """Interactive status display"""
         self.clear_screen()
-        print("📊 Repository Status")
-        print("=" * 30)
+        print("📊 Repository Status\n" + "=" * 30)
         
-        # Current branch
         branch = self.run_git_command(['git', 'branch', '--show-current'], capture_output=True)
         if branch:
             print(f"🌿 Current branch: {branch}")
         
-        # Status
         print("\n📝 Working Directory Status:")
         self.run_git_command(['git', 'status'])
         
-        # Recent commits
         print(f"\n📜 Recent commits:")
         self.run_git_command(['git', 'log', '--oneline', '-5'])
         
@@ -252,30 +227,26 @@ class InteractiveGitWrapper:
     def interactive_commit(self):
         """Interactive commit process"""
         self.clear_screen()
-        print("💾 Quick Commit")
-        print("=" * 20)
+        print("💾 Quick Commit\n" + "=" * 20)
         
-        # Show what will be committed
-        print("Files to be added:")
         status = self.run_git_command(['git', 'status', '--porcelain'], capture_output=True)
         if not status:
             self.print_info("No changes to commit!")
             input("Press Enter to continue...")
             return
         
+        print("Files to be added:")
         print(status)
         
         if not self.confirm("\nAdd all changes?", True):
             return
         
-        # Get commit message
         message = self.get_input("\nEnter commit message")
         if not message:
             self.print_error("Commit message required!")
             input("Press Enter to continue...")
             return
         
-        # Commit
         self.print_working("Adding all changes...")
         if not self.run_git_command(['git', 'add', '.'], show_output=False):
             input("Press Enter to continue...")
@@ -293,69 +264,175 @@ class InteractiveGitWrapper:
     def interactive_sync(self):
         """Interactive sync process"""
         self.clear_screen()
-        print("🔄 Sync Repository")
-        print("=" * 20)
+        print("🔄 Sync Repository\n" + "=" * 20)
         
-        # Get branch
         current_branch = self.run_git_command(['git', 'branch', '--show-current'], capture_output=True)
         branch = self.get_input("Branch to sync", current_branch or self.config['default_branch'])
         
-        self.print_working(f"Syncing with remote branch: {branch}")
-        
-        # Pull
-        self.print_working("Pulling latest changes...")
-        if not self.run_git_command(['git', 'pull', 'origin', branch]):
+        # Select remote for sync
+        remotes = self.get_remotes()
+        if not remotes:
+            self.print_error("No remotes configured!")
             input("Press Enter to continue...")
             return
         
-        # Push
+        remote = remotes[0] if len(remotes) == 1 else self.get_choice("Select remote:", remotes, "origin")
+        
+        self.print_working(f"Syncing with {remote}/{branch}")
+        
+        # Pull and Push
+        self.print_working("Pulling latest changes...")
+        if not self.run_git_command(['git', 'pull', remote, branch]):
+            input("Press Enter to continue...")
+            return
+        
         self.print_working("Pushing local commits...")
-        if self.run_git_command(['git', 'push', 'origin', branch]):
+        if self.run_git_command(['git', 'push', remote, branch]):
             self.print_success("Sync completed successfully!")
         
         input("Press Enter to continue...")
     
     def interactive_push(self):
-        """Interactive push"""
+        """Interactive push with remote selection"""
+        remotes = self.get_remotes()
+        if not remotes:
+            self.print_error("No remotes configured!")
+            return
+        
         current_branch = self.run_git_command(['git', 'branch', '--show-current'], capture_output=True)
         branch = current_branch or self.config['default_branch']
         
-        self.print_working(f"Pushing to origin/{branch}...")
-        if self.run_git_command(['git', 'push', 'origin', branch]):
+        remote = remotes[0] if len(remotes) == 1 else self.get_choice("Select remote to push to:", remotes, "origin")
+        
+        self.print_working(f"Pushing to {remote}/{branch}...")
+        if self.run_git_command(['git', 'push', remote, branch]):
             self.print_success("Push successful!")
+    
+    def interactive_remote_menu(self):
+        """Interactive remote management menu"""
+        while True:
+            self.clear_screen()
+            print("🔗 Remote Management\n" + "=" * 25)
+            
+            remotes = self.get_remotes()
+            if remotes:
+                print("Current remotes:")
+                for remote in remotes:
+                    url = self.run_git_command(['git', 'remote', 'get-url', remote], capture_output=True)
+                    print(f"  {remote}: {url}")
+                print()
+            else:
+                print("No remotes configured\n")
+            
+            options = [
+                "Add remote", "Remove remote", "List remotes", 
+                "Change remote URL", "Back to main menu"
+            ]
+            
+            choice = self.get_choice("Remote Operations:", options)
+            
+            if "Add remote" in choice:
+                self.interactive_add_remote()
+            elif "Remove remote" in choice:
+                self.interactive_remove_remote()
+            elif "List remotes" in choice:
+                self.interactive_list_remotes()
+            elif "Change remote URL" in choice:
+                self.interactive_change_remote_url()
+            elif "Back to main menu" in choice:
+                break
+    
+    def interactive_add_remote(self):
+        """Add a new remote"""
+        name = self.get_input("Remote name", "origin")
+        if not name:
+            return
+        
+        url = self.get_input("Remote URL")
+        if not url:
+            return
+        
+        self.print_working(f"Adding remote '{name}'...")
+        if self.run_git_command(['git', 'remote', 'add', name, url]):
+            self.print_success(f"Remote '{name}' added successfully!")
+        
+        input("Press Enter to continue...")
+    
+    def interactive_remove_remote(self):
+        """Remove an existing remote"""
+        remotes = self.get_remotes()
+        if not remotes:
+            self.print_info("No remotes to remove")
+            input("Press Enter to continue...")
+            return
+        
+        remote = self.get_choice("Select remote to remove:", remotes)
+        
+        if self.confirm(f"Are you sure you want to remove remote '{remote}'?", False):
+            if self.run_git_command(['git', 'remote', 'remove', remote]):
+                self.print_success(f"Remote '{remote}' removed successfully!")
+        
+        input("Press Enter to continue...")
+    
+    def interactive_list_remotes(self):
+        """List all remotes with details"""
+        self.clear_screen()
+        print("🔗 All Remotes\n" + "=" * 15)
+        self.run_git_command(['git', 'remote', '-v'])
+        input("\nPress Enter to continue...")
+    
+    def interactive_change_remote_url(self):
+        """Change URL of existing remote"""
+        remotes = self.get_remotes()
+        if not remotes:
+            self.print_info("No remotes configured")
+            input("Press Enter to continue...")
+            return
+        
+        remote = self.get_choice("Select remote to modify:", remotes)
+        current_url = self.run_git_command(['git', 'remote', 'get-url', remote], capture_output=True)
+        
+        print(f"Current URL: {current_url}")
+        new_url = self.get_input("New URL")
+        if not new_url:
+            return
+        
+        if self.run_git_command(['git', 'remote', 'set-url', remote, new_url]):
+            self.print_success(f"URL for '{remote}' updated successfully!")
+        
+        input("Press Enter to continue...")
     
     def interactive_branch_menu(self):
         """Interactive branch operations menu"""
         while True:
             self.clear_screen()
-            print("🌿 Branch Operations")
-            print("=" * 25)
+            print("🌿 Branch Operations\n" + "=" * 25)
             
-            # Show current branch
             current_branch = self.run_git_command(['git', 'branch', '--show-current'], capture_output=True)
             if current_branch:
                 print(f"Current branch: {current_branch}\n")
             
             options = [
-                "Create new branch",
-                "Switch to existing branch",
-                "List all branches",
-                "Delete branch",
-                "Back to main menu"
+                "Create new branch", "Switch to existing branch", "List all branches",
+                "Delete branch", "Back to main menu"
             ]
             
             choice = self.get_choice("Branch Operations:", options)
             
-            if "Create new branch" in choice:
-                self.interactive_create_branch()
-            elif "Switch to existing branch" in choice:
-                self.interactive_switch_branch()
-            elif "List all branches" in choice:
-                self.interactive_list_branches()
-            elif "Delete branch" in choice:
-                self.interactive_delete_branch()
-            elif "Back to main menu" in choice:
-                break
+            handlers = {
+                "Create new branch": self.interactive_create_branch,
+                "Switch to existing branch": self.interactive_switch_branch,
+                "List all branches": self.interactive_list_branches,
+                "Delete branch": self.interactive_delete_branch,
+                "Back to main menu": lambda: None
+            }
+            
+            for key, handler in handlers.items():
+                if key in choice:
+                    result = handler()
+                    if key == "Back to main menu":
+                        return
+                    break
     
     def interactive_create_branch(self):
         """Interactive branch creation"""
@@ -371,7 +448,6 @@ class InteractiveGitWrapper:
     
     def interactive_switch_branch(self):
         """Interactive branch switching"""
-        # Get available branches
         branches_output = self.run_git_command(['git', 'branch'], capture_output=True)
         if not branches_output:
             return
@@ -379,7 +455,6 @@ class InteractiveGitWrapper:
         branches = [b.strip().replace('* ', '') for b in branches_output.split('\n') if b.strip()]
         current_branch = self.run_git_command(['git', 'branch', '--show-current'], capture_output=True)
         
-        # Remove current branch from choices
         branches = [b for b in branches if b != current_branch]
         
         if not branches:
@@ -398,8 +473,7 @@ class InteractiveGitWrapper:
     def interactive_list_branches(self):
         """Interactive branch listing"""
         self.clear_screen()
-        print("🌿 All Branches")
-        print("=" * 15)
+        print("🌿 All Branches\n" + "=" * 15)
         self.run_git_command(['git', 'branch', '-a'])
         input("\nPress Enter to continue...")
     
@@ -412,7 +486,6 @@ class InteractiveGitWrapper:
         branches = [b.strip().replace('* ', '') for b in branches_output.split('\n') if b.strip()]
         current_branch = self.run_git_command(['git', 'branch', '--show-current'], capture_output=True)
         
-        # Remove current branch from choices
         branches = [b for b in branches if b != current_branch]
         
         if not branches:
@@ -461,8 +534,7 @@ class InteractiveGitWrapper:
     def interactive_init(self):
         """Interactive repository initialization"""
         self.clear_screen()
-        print("🎯 Initialize Repository")
-        print("=" * 25)
+        print("🎯 Initialize Repository\n" + "=" * 25)
         
         if self.confirm("Initialize git repository in current directory?", True):
             self.print_working("Initializing repository...")
@@ -470,13 +542,11 @@ class InteractiveGitWrapper:
                 input("Press Enter to continue...")
                 return
             
-            # Configure git
             if self.config['name'] and self.config['email']:
                 self.run_git_command(['git', 'config', 'user.name', self.config['name']], show_output=False)
                 self.run_git_command(['git', 'config', 'user.email', self.config['email']], show_output=False)
                 self.print_info("Applied your saved configuration")
             
-            # Add remote?
             if self.confirm("Add remote origin?", False):
                 remote_url = self.get_input("Remote URL")
                 if remote_url:
@@ -490,8 +560,7 @@ class InteractiveGitWrapper:
     def interactive_clone(self):
         """Interactive repository cloning"""
         self.clear_screen()
-        print("📥 Clone Repository")
-        print("=" * 20)
+        print("📥 Clone Repository\n" + "=" * 20)
         
         url = self.get_input("Repository URL")
         if not url:
@@ -520,8 +589,7 @@ class InteractiveGitWrapper:
         """Interactive configuration menu"""
         while True:
             self.clear_screen()
-            print("⚙️ Configuration")
-            print("=" * 20)
+            print("⚙️ Configuration\n" + "=" * 20)
             print(f"Name: {self.config['name'] or 'Not set'}")
             print(f"Email: {self.config['email'] or 'Not set'}")
             print(f"Default Branch: {self.config['default_branch']}")
@@ -530,67 +598,55 @@ class InteractiveGitWrapper:
             print("-" * 30)
             
             options = [
-                "Set Name",
-                "Set Email", 
-                "Set Default Branch",
-                "Toggle Auto Push",
-                "Toggle Emoji",
-                "Back to main menu"
+                "Set Name", "Set Email", "Set Default Branch",
+                "Toggle Auto Push", "Toggle Emoji", "Back to main menu"
             ]
             
             choice = self.get_choice("Configuration Options:", options)
             
-            if "Set Name" in choice:
-                name = self.get_input("Enter your name", self.config['name'])
-                if name:
-                    self.config['name'] = name
-                    self.save_config()
-                    self.print_success("Name updated!")
-            elif "Set Email" in choice:
-                email = self.get_input("Enter your email", self.config['email'])
-                if email:
-                    self.config['email'] = email
-                    self.save_config()
-                    self.print_success("Email updated!")
-            elif "Set Default Branch" in choice:
-                branch = self.get_input("Enter default branch", self.config['default_branch'])
-                if branch:
-                    self.config['default_branch'] = branch
-                    self.save_config()
-                    self.print_success("Default branch updated!")
-            elif "Toggle Auto Push" in choice:
-                self.config['auto_push'] = not self.config['auto_push']
-                self.save_config()
-                self.print_success(f"Auto push {'enabled' if self.config['auto_push'] else 'disabled'}!")
-            elif "Toggle Emoji" in choice:
-                self.config['show_emoji'] = not self.config['show_emoji']
-                self.save_config()
-                self.print_success(f"Emoji {'enabled' if self.config['show_emoji'] else 'disabled'}!")
-            elif "Back to main menu" in choice:
-                break
+            config_handlers = {
+                "Set Name": lambda: self.update_config('name', self.get_input("Enter your name", self.config['name'])),
+                "Set Email": lambda: self.update_config('email', self.get_input("Enter your email", self.config['email'])),
+                "Set Default Branch": lambda: self.update_config('default_branch', self.get_input("Enter default branch", self.config['default_branch'])),
+                "Toggle Auto Push": lambda: self.toggle_config('auto_push'),
+                "Toggle Emoji": lambda: self.toggle_config('show_emoji'),
+                "Back to main menu": lambda: None
+            }
+            
+            for key, handler in config_handlers.items():
+                if key in choice:
+                    result = handler()
+                    if key == "Back to main menu":
+                        return
+                    break
             
             if "Back to main menu" not in choice:
                 time.sleep(1)
     
+    def update_config(self, key, value):
+        """Update configuration value"""
+        if value:
+            self.config[key] = value
+            self.save_config()
+            self.print_success(f"{key.replace('_', ' ').title()} updated!")
+    
+    def toggle_config(self, key):
+        """Toggle boolean configuration value"""
+        self.config[key] = not self.config[key]
+        self.save_config()
+        status = 'enabled' if self.config[key] else 'disabled'
+        self.print_success(f"{key.replace('_', ' ').title()} {status}!")
+    
     def show_help(self):
         """Show help information"""
         self.clear_screen()
-        print("❓ Git Wrapper Help")
-        print("=" * 25)
+        print("❓ Git Wrapper Help\n" + "=" * 25)
         print("""
-This interactive Git wrapper simplifies common Git operations:
-
 🚀 Main Features:
 • Interactive menus for all operations
-• Automatic repository detection
-• Smart defaults and confirmation prompts
+• Remote management (add/remove/change URLs)
+• Multi-remote push/pull support
 • Configuration management
-• Visual feedback with emojis
-
-🎯 Getting Started:
-1. Run 'gw' to start interactive mode
-2. Configure your name and email in settings
-3. Navigate through menus with number choices
 
 ⚡ Quick Commands:
 • gw status    - Show repository status
@@ -613,25 +669,23 @@ def main():
     """Main entry point"""
     git = InteractiveGitWrapper()
     
-    # Check for command line arguments
     if len(sys.argv) > 1:
         command = sys.argv[1].lower()
         
-        # Handle direct commands
-        if command == 'status':
-            git.interactive_status()
-        elif command == 'commit':
-            git.interactive_commit()
-        elif command == 'sync':
-            git.interactive_sync()
-        elif command == 'config':
-            git.interactive_config_menu()
+        handlers = {
+            'status': git.interactive_status,
+            'commit': git.interactive_commit,
+            'sync': git.interactive_sync,
+            'config': git.interactive_config_menu
+        }
+        
+        if command in handlers:
+            handlers[command]()
         else:
             print(f"Unknown command: {command}")
             print("Available commands: status, commit, sync, config")
             print("Or run 'gw' without arguments for interactive mode")
     else:
-        # Start interactive mode
         try:
             git.show_main_menu()
         except KeyboardInterrupt:
