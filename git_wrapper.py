@@ -509,22 +509,33 @@ class InteractiveGitWrapper:
         name = self.get_input("Remote name", "origin")
         if not name:
             return
-        
+    
         url = self.get_input("Remote URL")
         if not url:
             return
-        
+    
         self.print_working(f"Adding remote '{name}'...")
-        if self.run_git_command(['git', 'remote', 'add', name, url]):
-            self.print_success(f"Remote '{name}' added successfully!")
-            
-            # If this is the first remote, make it default
-            remotes = self.get_remotes()
-            if len(remotes) == 1:
-                self.config['default_remote'] = name
-                self.save_config()
-                self.print_info(f"Set as default remote: {name}")
-        
+        if not self.run_git_command(['git', 'remote', 'add', name, url]):
+            input("Press Enter to continue...")
+            return
+    
+        self.print_success(f"Remote '{name}' added successfully!")
+    
+        # If this is the first remote, make it default
+        remotes = self.get_remotes()
+        if len(remotes) == 1:
+            self.config['default_remote'] = name
+            self.save_config()
+            self.print_info(f"Set as default remote: {name}")
+    
+        # Ask if user wants to set upstream tracking for all branches
+        if self.confirm(f"Set upstream tracking for all branches to '{name}'?", False):
+            self.print_working("Setting upstream tracking for all branches...")
+            if self.run_git_command(['git', 'push', '--set-upstream', name, '--all']):
+                self.print_success("Upstream tracking set for all branches!")
+            else:
+                self.print_error("Failed to set upstream tracking")
+    
         input("Press Enter to continue...")
     
     def interactive_remove_remote(self):
