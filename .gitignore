@@ -1,0 +1,43 @@
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+
+# Environment files
+.env
+.env.*
+
+# Dependency directories
+node_modules/
+venv/
+.venv/
+__pycache__/
+
+# Python bytecode
+*.py[cod]
+*.pyo
+*.pyd
+
+# IDE files
+.vscode/
+.idea/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Test coverage
+htmlcov/
+coverage.xml
+*.cover
+.cache/
+.pytest_cache/
+
+# Miscellaneous
+*.swp
+*.bak
+*.tmp
+
