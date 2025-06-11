@@ -646,7 +646,8 @@ class InteractiveGitWrapper:
         branches = [b.strip().replace('* ', '') for b in branches_output.split('\n') if b.strip()]
         current_branch = self.run_git_command(['git', 'branch', '--show-current'], capture_output=True)
         
-        branches = [b for b in branches if b != current_branch]
+        if len(branches) > 1:
+            branches = [b for b in branches if b != current_branch]
         
         if not branches:
             self.print_info("No other branches available")
@@ -677,7 +678,8 @@ class InteractiveGitWrapper:
         branches = [b.strip().replace('* ', '') for b in branches_output.split('\n') if b.strip()]
         current_branch = self.run_git_command(['git', 'branch', '--show-current'], capture_output=True)
         
-        branches = [b for b in branches if b != current_branch]
+        if len(branches) > 1:
+            branches = [b for b in branches if b != current_branch]
         
         if not branches:
             self.print_info("No branches available to delete")
