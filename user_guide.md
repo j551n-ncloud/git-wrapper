@@ -498,3 +498,127 @@ Use these commands alongside the Interactive Git Wrapper:
 *Created by Johannes Nguyen | Enhanced with multi-remote push support*
 
 **Happy Git-ing! 🎉**
+
+## 🏆 Advanced Features
+
+### 🗂️ Stash Management
+- **Named Stashes**: Create stashes with custom names for better organization
+- **Stash Search**: Find stashes by name or content
+- **Stash Preview**: View stash contents before applying
+- **Stash Metadata**: Track creation time and description for each stash
+- **Interactive Management**: Browse, apply, and delete stashes through intuitive menus
+
+### 📝 Commit Template Engine
+- **Template Categories**: Choose from feat, fix, docs, style, refactor, test, chore
+- **Conventional Commits**: Enforce standardized commit message format
+- **Custom Templates**: Create and manage your own templates
+- **Template Validation**: Ensure commit messages follow conventions
+- **Interactive Selection**: Browse and select templates through menus
+
+### 🔀 Branch Workflow Manager
+- **Workflow Models**: Support for Git Flow, GitHub Flow, GitLab Flow
+- **Automated Branch Creation**: Create feature/hotfix/release branches with proper naming
+- **Branch Completion**: Merge/rebase with cleanup options
+- **Workflow Configuration**: Customize workflow to match team practices
+- **Rollback Support**: Recover from failed workflow operations
+
+### ⚔️ Conflict Resolution Assistant
+- **Visual Conflict Markers**: See conflicts with highlighting
+- **Resolution Strategies**: Choose ours/theirs/manual for each conflict
+- **Editor Integration**: Open conflicts in your preferred editor
+- **Conflict Preview**: View conflicts before attempting resolution
+- **Interactive Resolution**: Step-by-step conflict resolution workflow
+
+### 🏥 Repository Health Dashboard
+- **Branch Analysis**: Identify stale and unmerged branches
+- **Large File Detection**: Find files impacting repository size
+- **Repository Statistics**: View size, commit count, contributor info
+- **Health Recommendations**: Get actionable cleanup suggestions
+- **Health Reports**: Export detailed health analysis
+
+### 💾 Smart Backup System
+- **Multiple Destinations**: Back up to multiple remote repositories
+- **Scheduled Backups**: Automate backups on schedule
+- **Selective Backup**: Choose specific branches to back up
+- **Backup Verification**: Ensure backup integrity
+- **Backup Restoration**: Easily restore from previous backups
+
+## 🔄 Using Advanced Features
+
+### Stash Management
+```bash
+# Access stash management
+gw                   # Enter interactive mode
+  → Stash Management # Select from main menu
+
+# Common operations
+- Create Named Stash: Save changes with custom name
+- List & Browse: View and manage existing stashes
+- Search Stashes: Find stashes by name or content
+- Apply/Pop: Apply stash with or without removing it
+```
+
+### Commit Templates
+```bash
+# Access commit templates
+gw                   # Enter interactive mode
+  → Commit Templates # Select from main menu
+
+# Common operations
+- Use Template: Select template for current commit
+- Manage Templates: Create, edit, delete templates
+- Set Default: Configure default template
+- Validate Message: Check commit message against conventions
+```
+
+### Branch Workflows
+```bash
+# Access branch workflows
+gw                   # Enter interactive mode
+  → Branch Workflows # Select from main menu
+
+# Common operations
+- Start Feature: Create new feature branch
+- Complete Feature: Merge/rebase and clean up
+- Manage Hotfix/Release: Handle special branches
+- Configure Workflow: Select and customize workflow model
+```
+
+### Conflict Resolution
+```bash
+# Access conflict resolution
+gw                   # Enter interactive mode
+  → Conflict Resolution # Select from main menu
+
+# Common operations
+- List Conflicts: See all conflicted files
+- Preview Conflict: View conflict with highlighting
+- Resolve Conflict: Choose resolution strategy
+- Finalize Merge: Complete merge after resolution
+```
+
+### Repository Health
+```bash
+# Access repository health
+gw                   # Enter interactive mode
+  → Repository Health # Select from main menu
+
+# Common operations
+- Run Analysis: Check overall repository health
+- Branch Analysis: Find stale/unmerged branches
+- File Analysis: Identify large files
+- Generate Report: Create detailed health report
+```
+
+### Smart Backup
+```bash
+# Access smart backup
+gw                   # Enter interactive mode
+  → Smart Backup    # Select from main menu
+
+# Common operations
+- Configure Backup: Set up destinations and schedules
+- Create Backup: Manually back up selected branches
+- Manage Backups: View and clean up backup history
+- Restore: Recover from backup
+```
